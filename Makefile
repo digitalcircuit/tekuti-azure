@@ -21,4 +21,6 @@ clean:
 	rm -f $(OBJ)
 
 install: all
-	install -m755 -D src/tekuti $(prefix)/bin
+	install -m755 -d $(INSTALL_SITE)/tekuti
+	install -m644 -D $(OBJ) $(INSTALL_SITE)/tekuti
+	install -m755 -D src/tekuti $(INSTALL_BIN)

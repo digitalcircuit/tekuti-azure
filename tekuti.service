@@ -1,0 +1,9 @@
+[Unit]
+Description=An unholy concoction of parenthetical guile
+
+[Service]
+Environment="GUILE_LOAD_COMPILED_PATH=/usr/local/share/guile/site/2.0"
+ExecStart=/usr/local/bin/tekuti -c /etc/tekuti/config.scm
+
+[Install]
+WantedBy=default.target
