@@ -353,9 +353,7 @@
 (define (main-sidebar request index)
   (sidebar-ul
    `((li (h2 (a (@ (href ,(relurl '("feed" "atom"))))
-                "subscribe "
-                (img (@ (src ,(relurl '("wp-content" "feed-icon-14x14.png")))
-                        (alt "[feed]")))
+                "[feed (atom)]"
                 )))
      (li (h2 "search")
          (form (@ (method "POST")
@@ -369,9 +367,7 @@
 (define (post-sidebar post index)
   (sidebar-ul
    `((li (h2 (a (@ (href ,(relurl '("feed" "atom"))))
-                "subscribe "
-                (img (@ (src ,(relurl '("wp-content" "feed-icon-14x14.png")))
-                        (alt "[feed]")))
+                "[feed (atom)]"
                 )))
      (li (h2 "related")
          (ul ,@(map (lambda (post-and-tags)
