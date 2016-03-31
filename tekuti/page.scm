@@ -83,14 +83,13 @@
               `(li ,(rellink `("admin" "changes" ,(car rev))
                              (caddr rev))))
             (git-rev-list "refs/heads/master" n)))
-     (respond `(,(sidebar-ul `((li (h2 "posts " ,(rellink '("admin" "posts")
-                                                          ">>"))
-                                   (ul ,@(post-links 5)))
-                               (li (h2 "changes" ,(rellink '("admin" "changes")
-                                                           ">>"))
-                                   (ul ,(recent-changes 5)))))
-                (h2 "new post")
-                ,(post-editing-form #f))))))
+     (respond `((h2 "new post")
+                ,(post-editing-form #f)
+                ,(sidebar-ul
+                  `((li (h2 "posts " ,(rellink '("admin" "posts") ">>"))
+                        (ul ,@(post-links 5)))
+                    (li (h2 "changes" ,(rellink '("admin" "changes") ">>"))
+                        (ul ,(recent-changes 5))))))))))
 
 (define (page-admin-posts request body index)
   (with-authentication
@@ -185,10 +184,10 @@
                 #:redirect (relurl '("admin")))))))
 
 (define (page-index request body index)
-  (respond `(,(main-sidebar request index)
-             ,@(map (lambda (post)
+  (respond `(,@(map (lambda (post)
                       (show-post post #f))
-                    (latest-posts index #:limit 10)))
+                    (latest-posts index #:limit 10))
+             ,(main-sidebar request index))
            #:etag (assq-ref index 'master)))
 
 (define (page-show-post request body index year month day post)
@@ -196,8 +195,8 @@
    ((post-from-key index (make-post-key year month day post)
                    #:allow-draft? #t)
     => (lambda (post)
-         (respond `(,(post-sidebar post index)
-                    ,(show-post post #t))
+         (respond `(,(show-post post #t)
+                    ,(post-sidebar post index))
                   #:title (string-append (post-title post) " -- " *title*)
                   #:etag (assq-ref index 'master))))
    (else
