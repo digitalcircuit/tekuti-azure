@@ -32,7 +32,7 @@
 
 (define* (templatize #:key
                      (title *title*)
-                     (body '((p "(missing content?)"))))
+                     (body '((p "(Missing content?)"))))
   (define (href . args)
     `(href ,(string-append "/" (encode-and-join-uri-path
                                 (append *public-path-base* args)))))
@@ -60,7 +60,7 @@
                    (media "screen")
                    (href ,*css-file*)))
           (link (@ (rel "alternate")
-                   (type "application/rss+xml")
+                   (type "application/atom+xml")
                    (title ,*title*)
                    (href ,(relurl `("feed" "atom"))))))
     (body
@@ -70,6 +70,6 @@
           ,@(make-navbar)
           (div (@ (id "content")) ,@body)
           (div (@ (id "footer"))
-               "powered by "
-               (a (@ (href "//wingolog.org/software/tekuti/"))
-                  "tekuti"))))))
+               "Powered by "
+               (a (@ (href "//github.io/adamemerson/tekuti-azure/"))
+                  "Tekuti-azure"))))))

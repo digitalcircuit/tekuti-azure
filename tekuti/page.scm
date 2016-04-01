@@ -83,12 +83,12 @@
               `(li ,(rellink `("admin" "changes" ,(car rev))
                              (caddr rev))))
             (git-rev-list "refs/heads/master" n)))
-     (respond `((h2 "new post")
+     (respond `((h2 "New Post")
                 ,(post-editing-form #f)
                 ,(sidebar-ul
-                  `((li (h2 "posts " ,(rellink '("admin" "posts") ">>"))
+                  `((li (h2 "Posts " ,(rellink '("admin" "posts") ">>"))
                         (ul ,@(post-links 5)))
-                    (li (h2 "changes" ,(rellink '("admin" "changes") ">>"))
+                    (li (h2 "Changes" ,(rellink '("admin" "changes") ">>"))
                         (ul ,(recent-changes 5))))))))))
 
 (define (page-admin-posts request body index)
@@ -99,7 +99,7 @@
        (map (lambda (post)
               `(h3 ,(admin-post-link post)))
             (latest-posts index #:allow-unpublished? #t #:limit -1)))
-     (respond `((h1 "all your posts are belong to tekuti")
+     (respond `((h1 "All your posts are belong to Tekuti")
                 ,@(post-headers))))))
 
 (define (page-admin-post request body index key)
@@ -115,7 +115,7 @@
    request
    (lambda ()
      (let ((post (make-new-post (request-form-data request body))))
-       (respond `((p "redirecting..."))
+       (respond `((p "Redirecting..."))
                 #:redirect (admin-post-url post))))))
 
 (define (page-admin-modify-post request body index key)
@@ -123,7 +123,7 @@
    request
    (lambda ()
      (let ((post (modify-post key (request-form-data request body))))
-       (respond `((p "redirecting..."))
+       (respond `((p "Redirecting..."))
                 #:redirect (admin-post-url post))))))
 
 (define (page-admin-delete-post request body index key)
@@ -131,7 +131,7 @@
    request
    (lambda ()
      (delete-post (post-from-key index key #:allow-unpublished? #t))
-     (respond `((p "redirecting...")) #:redirect (relurl `("admin"))))))
+     (respond `((p "Redirecting...")) #:redirect (relurl `("admin"))))))
 
 (define (page-admin-delete-comment request body index key comment-id)
   (with-authentication
@@ -139,7 +139,7 @@
    (lambda ()
      (let ((post (post-from-key index key #:allow-unpublished? #t)))
        (delete-comment post comment-id)
-       (respond `((p "redirecting...")) #:redirect (admin-post-url post))))))
+       (respond `((p "Redirecting...")) #:redirect (admin-post-url post))))))
 
 (define (page-admin-changes request body index)
   (with-authentication
@@ -148,7 +148,7 @@
      (let ((revs (git-rev-list (request-query-ref request "start"
                                                   "refs/heads/master")
                                10)))
-       (respond `((h2 "recent changes")
+       (respond `((h2 "Recent changes")
                   ,@(map (lambda (rev)
                            `(div (h3 ,(rellink `("admin" "changes" ,(car rev))
                                                (caddr rev)))
@@ -263,7 +263,7 @@
 (define (page-search request body index)
   (let* ((string (or (assoc-ref (request-form-data request body) "string") ""))
          (posts (find-posts-matching string index)))
-    (respond `((h2 "search results: \"" ,string "\"")
+    (respond `((h2 "Search results: \"" ,string "\"")
                ,@(if (null? posts)
                      `((p "No posts matched your search string."))
                      (map (lambda (post)
@@ -272,10 +272,10 @@
 
 (define (page-show-tags request body index)
   (respond `((div (@ (id "tag-cloud"))
-                  (h2 "all tags")
+                  (h2 "All tags")
                   ,@(tag-cloud (top-tags index 200))))
            #:etag (assq-ref index 'master)
-           #:title (string-append "all tags -- " *title*)))
+           #:title (string-append "All tags -- " *title*)))
 
 (define (page-show-tag request body index tag)
   (let* ((tags (assq-ref index 'tags))
@@ -283,7 +283,7 @@
                        (post-from-key index key))
                      (hash-ref tags tag '()))))
     (if (pair? posts)
-        (respond `((h2 "posts tagged \"" ,tag "\" ("
+        (respond `((h2 "Posts tagged \"" ,tag "\" ("
                        ,(rellink '("feed" "atom") "feed"
                                  #:query `(("with" . ,tag)))
                        ")")
@@ -297,9 +297,9 @@
                  #:status 404))))
 
 (define (page-debug request body index)
-  (respond `((p "hello world!")
+  (respond `((p "Hello world!")
              (table
-              (tr (th "header") (th "value"))
+              (tr (th "Header") (th "Value"))
               ,@(map (lambda (pair)
                        `(tr (td (tt ,(with-output-to-string
                                        (lambda () (display (car pair))))))
@@ -307,7 +307,7 @@
                                        (lambda ()
                                          (write (cdr pair))))))))
                      (request-headers request))))
-           #:title "debug"))
+           #:title "Debug"))
 
 (define (page-not-found request body index)
   (respond `((h1 "Page not found")

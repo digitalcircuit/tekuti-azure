@@ -353,9 +353,9 @@
 (define (main-sidebar request index)
   (sidebar-ul
    `((li (h2 (a (@ (href ,(relurl '("feed" "atom"))))
-                "[feed (atom)]"
+                "[Feed (Atom)]"
                 )))
-     (li (h2 "search")
+     (li (h2 "Search")
          (form (@ (method "POST")
                   (action ,(relurl '("search"))))
                (input (@ (name "string") (type "text") (size "15")
@@ -367,17 +367,17 @@
 (define (post-sidebar post index)
   (sidebar-ul
    `((li (h2 (a (@ (href ,(relurl '("feed" "atom"))))
-                "[feed (atom)]"
+                "[Feed (Atom)]"
                 )))
-     (li (h2 "related")
+     (li (h2 "Related")
          (ul ,@(map (lambda (post-and-tags)
-                      `(li (@ (style "margin-top: 5px"))
+                      `(li (@ (style "margin-top: .3em"))
                            ,(post-link (car post-and-tags))))
                     (take-max (compute-related-posts post index) 10)))))))
 
 (define (related-tag-cloud tag index)
   `(div (@ (id "tag-cloud"))
-        (h2 "related tags")
+        (h2 "Related Tags")
         ,@(tag-cloud (compute-related-tags tag index))))
 
 (define (find-posts-matching string index)
@@ -412,9 +412,9 @@
      ,@(if last-modified
            `((updated ,(timestamp->atom-date last-modified)))
            '())
-     (generator (@ (uri "http://wingolog.org/software/tekuti")
-                   (version "what"))
-                "tekuti")
+     (generator (@ (uri "https://github.com/adamemrson/Tekuti-azure")
+                   (version "0.1"))
+                "tekuti-azure")
      (link (@ (rel "alternate") (type "text/html")
               (href ,(relurl))))
      (id ,(relurl "feed" "atom"))
