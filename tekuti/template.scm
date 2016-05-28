@@ -67,9 +67,10 @@
      (div (@ (id "rap"))
           (h1 (@ (id "header"))
               (a (@ ,(href "")) ,*title*))
+          (div (@ (id "mainsubtitle")) ,*subtitle*)
           ,@(make-navbar)
           (div (@ (id "content")) ,@body)
           (div (@ (id "footer"))
                "Powered by "
-               (a (@ (href "//github.io/adamemerson/tekuti-azure/"))
+               (a (@ (href "//github.com/adamemerson/tekuti-azure/"))
                   "Tekuti-azure"))))))

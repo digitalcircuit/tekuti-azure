@@ -412,7 +412,7 @@
      ,@(if last-modified
            `((updated ,(timestamp->atom-date last-modified)))
            '())
-     (generator (@ (uri "https://github.com/adamemrson/Tekuti-azure")
+     (generator (@ (uri "https://github.com/adamemerson/Tekuti-azure")
                    (version "0.1"))
                 "tekuti-azure")
      (link (@ (rel "alternate") (type "text/html")
