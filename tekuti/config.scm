@@ -31,7 +31,7 @@
             *private-host* *private-port* *private-path-base*
             *git-dir* *git* *debug* *admin-user* *admin-pass*
             *css-file* *navbar-links* *navbar-infix*
-            *title* *subtitle* *name*
+            *title* *subtitle* *name* *html-head*
             *server-impl* *server-impl-args*))
 
 (define *public-scheme* 'http)
@@ -58,6 +58,16 @@
 (define *server-impl* 'http)
 (define *server-impl-args*
   (lambda () `(#:host ,*private-host* #:port ,*private-port*)))
+
+(define *html-head*
+  `((meta (@ (name "Generator")
+             (content "An unholy concoction of parenthetical guile")))
+    (meta (@ (name "viewport") (content "width=device-width")))
+    (link (@ (rel "stylesheet")
+             (type "text/css")
+             (media "screen")
+             (href ,*css-file*)))))
+
 
 (define-parsed-entity! 'agrave 224)
 (define-parsed-entity! 'laquo 171)
