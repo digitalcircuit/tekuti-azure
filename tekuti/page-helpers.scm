@@ -25,6 +25,7 @@
 ;;; Code:
 
 (define-module (tekuti page-helpers)
+  #:use-module (ice-9 format)
   #:use-module (sxml simple)
   #:use-module (web uri)
   #:use-module (web http)
@@ -209,6 +210,20 @@
                                     '((checked "checked"))
                                     '())))
                     "public"))
+          (p (select (@ (name "format"))
+               (option (@ (value "htmlish")
+                          ,@(if (or (not post)
+                                    (eq? (post-format post) 'htmlish))
+                                '((selected "selected"))
+                                '()))
+                       "HTMLish") 
+               (option (@ (value "wordpress")
+                          ,@(if (and post (eq? (post-format post) 'wordpress))
+                                '((selected "selected"))
+                                '()))
+                       "Wordpress"))
+             (label (@ (for "format")) " <- format"))
+
           (p (input (@ (type "submit")
                        (value ,(if post "modify post" "new post"))))))
     ,@(if post

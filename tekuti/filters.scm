@@ -30,14 +30,16 @@
   #:use-module (tekuti match-bind)
   #:use-module (tekuti util)
   #:export (wordpress->sxml
-            *allowed-tags* bad-user-submitted-xhtml?))
+            htmlish->sxml
+            *allowed-tags*
+            bad-user-submitted-xhtml?))
 
 (define blocks '(table thead tfoot caption colgroup tbody tr td th div
                  dl dd dt ul ol li pre select form map area blockquote
-                 address math style input p h1 h2 h3 h4 h5 h6))
+                 address math style input p h1 h2 h3 h4 h5 h6 article))
 
 (define (can-contain-p? tag)
-  (memq tag '(div li blockquote)))
+  (memq tag '(div article li blockquote)))
 
 (define (inline? tag)
   (not (memq tag blocks)))
@@ -79,7 +81,7 @@
             (cons (car in) (pclose p out))))))))
 
 (define (wordpress->sxml text)
-  (let ((sxml (cadr (with-input-from-string* (string-append "<div>" text "</div>")
+  (let ((sxml (cadr (with-input-from-string* (string-append "<article>" text "</article>")
                       xml->sxml))))
     (pre-post-order
      sxml
@@ -89,6 +91,10 @@
                            (cons tag body))))
        (*text* . ,(lambda (tag text)
                     text))))))
+
+(define (htmlish->sxml text)
+  (cadr (with-input-from-string*
+         (string-append "<article>" text "</article>") xml->sxml)))
 
 (define *allowed-tags*
   `((a (href . ,urlish?) title)
@@ -137,7 +143,7 @@
 
 ;; could be better, reflect nesting rules.
 (define *valid-xhtml-rules*
-  `((div ,(compile-sxslt-rules *allowed-tags*)
+  `((article ,(compile-sxslt-rules *allowed-tags*)
          . ,(lambda body body))))
 
 (define (bad-user-submitted-xhtml? x)

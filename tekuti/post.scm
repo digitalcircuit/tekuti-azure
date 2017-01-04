@@ -43,6 +43,7 @@
             post-sxml-content post-readable-date post-n-comments
             post-raw-content
             post-title
+            post-format
 
             make-new-post modify-post delete-post
 
@@ -119,13 +120,17 @@
 (define (post-raw-content post)
   (git "show" (string-append (assq-ref post 'sha1) ":content")))
 
+(define (post-format post)
+  (string->symbol (or (assq-ref post 'format) "wordpress")))
+
 (define (post-sxml-content post)
-  (let ((format (or (assq-ref post 'format) 'wordpress))
+  (let ((format (post-format post))
         (raw (post-raw-content post)))
     (catch #t
            (lambda ()
              (case format
                ((wordpress) (wordpress->sxml raw))
+               ((htmlish) (htmlish->sxml raw))
                (else `(pre ,raw))))
            (lambda args
              `(pre ,(bad-user-submitted-xhtml? raw))))))
@@ -151,7 +156,7 @@
                    (for-each
                     (lambda (k)
                       (format #t "~a: ~a\n" k (assq-ref parsed k)))
-                    '(timestamp tags status title name comment_status))))
+                    '(timestamp tags status title name comment_status format))))
         (content (with-output-to-blob (display (assq-ref parsed 'body))))
         (key (assq-ref parsed 'key))
         (message (format #f "~a: \"~a\""
@@ -193,7 +198,8 @@
         (tags (assoc-ref post-data "tags"))
         (status (assoc-ref post-data "status"))
         (comments-open? (assoc-ref post-data "comments"))
-        (date-str (assoc-ref post-data "date")))
+        (date-str (assoc-ref post-data "date"))
+        (format (assoc-ref post-data "format")))
     (let ((timestamp (if (string-null? date-str)
                          (time-second (current-time))
                          (rfc822-date->timestamp date-str)))
@@ -205,6 +211,7 @@
         (comment_status . ,(if comments-open? "open" "closed"))
         (timestamp . ,timestamp)
         (name . ,name)
+        (format . ,format)
         (key . ,(string-downcase
                  (uri-encode
                   (string-append (date->string (timestamp->date timestamp)
