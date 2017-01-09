@@ -32,7 +32,7 @@
             *git-dir* *git* *debug* *admin-user* *admin-pass*
             *css-file* *navbar-links* *navbar-infix*
             *title* *subtitle* *name* *html-head*
-            *server-impl* *server-impl-args*))
+            *server-impl* *server-impl-args* *post-limit*))
 
 (define *public-scheme* 'http)
 (define *public-host* "127.0.0.1")
@@ -58,6 +58,8 @@
 (define *server-impl* 'http)
 (define *server-impl-args*
   (lambda () `(#:host ,*private-host* #:port ,*private-port*)))
+
+(define *post-limit* -1)
 
 (define *html-head*
   `((meta (@ (name "Generator")

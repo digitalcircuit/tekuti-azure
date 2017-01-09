@@ -234,7 +234,7 @@
                   5)))
 
 (define* (latest-posts index #:key allow-unpublished? (filter identity)
-                       (limit 10))
+                       (limit *post-limit*))
   (filter-mapn
    (lambda (key)
      (and=> (post-from-key index key #:allow-unpublished? allow-unpublished?)

@@ -74,10 +74,10 @@
    request
    (lambda ()
      ;; here we need to be giving a dashboard view instead of this
-     (define (post-links n)
+     (define (post-links)
        (map (lambda (post)
               `(li ,(admin-post-link post)))
-            (latest-posts index #:allow-unpublished? #t #:limit n)))
+            (latest-posts index #:allow-unpublished? #t)))
      (define (recent-changes n)
        (map (lambda (rev)
               `(li ,(rellink `("admin" "changes" ,(car rev))
@@ -87,7 +87,7 @@
                 ,(post-editing-form #f)
                 ,(sidebar-ul
                   `((li (h2 "Posts " ,(rellink '("admin" "posts") ">>"))
-                        (ul ,@(post-links 5)))
+                        (ul ,@(post-links)))
                     (li (h2 "Changes" ,(rellink '("admin" "changes") ">>"))
                         (ul ,(recent-changes 5))))))))))
 
@@ -186,7 +186,7 @@
 (define (page-index request body index)
   (respond `(,@(map (lambda (post)
                       (show-post post #f))
-                    (latest-posts index #:limit 10))
+                    (latest-posts index))
              ,(main-sidebar request index))
            #:etag (assq-ref index 'master)))
 
@@ -367,5 +367,4 @@
      (latest-posts index
                    #:filter
                    (lambda (post)
-                     (and (include? post) (not (exclude? post))))
-                   #:limit 10))))
+                     (and (include? post) (not (exclude? post))))))))
