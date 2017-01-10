@@ -27,16 +27,42 @@
 (define-module (tekuti config)
   #:use-module (tekuti util)
   #:use-module ((sxml ssax) #:select (define-parsed-entity!))
-  #:export (*public-scheme* *public-host* *public-port* *public-path-base*
+  #:use-module (web request)
+  #:export (request->public-scheme request->public-host
+            request->public-port *public-path-base*
             *private-host* *private-port* *private-path-base*
             *git-dir* *git* *debug* *admin-user* *admin-pass*
             *css-file* *navbar-links* *navbar-infix*
             *title* *subtitle* *name* *html-head*
-            *server-impl* *server-impl-args* *post-limit*))
+            *server-impl* *server-impl-args* *post-limit*
+            *cache-key-headers*))
 
-(define *public-scheme* 'http)
-(define *public-host* "127.0.0.1")
-(define *public-port* 8080)
+(define request->public-scheme
+  (constantly 'http))
+(define request->public-host
+  (constantly "127.0.0.1"))
+(define request->public-port
+  (constantly 8080))
+
+(define (host-from-host request)
+  (let ((h (assq-ref (request-headers request) 'host)))
+    (cond
+     ((pair? h) (car h))
+     ((string? h) h)
+     (else "misconfigured.invalid"))))
+
+(define (port-from-host request)
+  (and=> (assq-ref (request-headers request) 'host)
+         (lambda (h)
+           (and (pair? h) (cdr h)))))
+
+(define (schema-from-forwarded-proto request)
+   (if (and=> (assq-ref (request-headers request) 'x-forwarded-proto)
+              (lambda (s)
+                (and (string? s) (string-ci=? "https" s))))
+       'https
+       'http))
+
 (define *public-path-base* '())
 
 (define *private-host* "127.0.0.1")
@@ -60,6 +86,8 @@
   (lambda () `(#:host ,*private-host* #:port ,*private-port*)))
 
 (define *post-limit* -1)
+
+(define *cache-key-headers '())
 
 (define *html-head*
   `((meta (@ (name "Generator")

@@ -68,7 +68,8 @@
    (maybe-reindex index)
    'cache
    (lambda (index)
-     (update-cache (assq-ref index 'cache) request response body))))
+     (update-cache (assq-ref index 'cache) request response
+                   body))))
 
 (define (handler request body index)
   (let ((index (maybe-reindex index)))

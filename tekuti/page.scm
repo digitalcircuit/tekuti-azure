@@ -64,9 +64,9 @@
   (string-downcase (uri-encode (encode-and-join-uri-path parts))))
 
 (define (not-implemented request . args)
-  (respond `((h1 "Not yet implemented")
-                  (p "Path handler not yet implemented: "
-                     ,(request-relative-path-str request)))
+  (respond request `((h1 "Not yet implemented")
+                     (p "Path handler not yet implemented: "
+                        ,(request-relative-path-str request)))
            #:status 500))
 
 (define (page-admin request body index)
@@ -83,7 +83,8 @@
               `(li ,(rellink `("admin" "changes" ,(car rev))
                              (caddr rev))))
             (git-rev-list "refs/heads/master" n)))
-     (respond `((h2 "New Post")
+     (respond request
+              `((h2 "New Post")
                 ,(post-editing-form #f)
                 ,(sidebar-ul
                   `((li (h2 "Posts " ,(rellink '("admin" "posts") ">>"))
@@ -99,7 +100,8 @@
        (map (lambda (post)
               `(h3 ,(admin-post-link post)))
             (latest-posts index #:allow-unpublished? #t #:limit -1)))
-     (respond `((h1 "All your posts are belong to Tekuti")
+     (respond request
+              `((h1 "All your posts are belong to Tekuti")
                 ,@(post-headers))))))
 
 (define (page-admin-post request body index key)
@@ -107,7 +109,8 @@
    request
    (lambda ()
      (let ((post (post-from-key index key #:allow-unpublished? #t)))
-       (respond `((h1 ,(post-title post))
+       (respond request
+                `((h1 ,(post-title post))
                   ,(post-editing-form post)))))))
 
 (define (page-admin-new-post request body index)
@@ -115,7 +118,8 @@
    request
    (lambda ()
      (let ((post (make-new-post (request-form-data request body))))
-       (respond `((p "Redirecting..."))
+       (respond request
+                `((p "Redirecting..."))
                 #:redirect (admin-post-url post))))))
 
 (define (page-admin-modify-post request body index key)
@@ -123,7 +127,8 @@
    request
    (lambda ()
      (let ((post (modify-post key (request-form-data request body))))
-       (respond `((p "Redirecting..."))
+       (respond request
+                `((p "Redirecting..."))
                 #:redirect (admin-post-url post))))))
 
 (define (page-admin-delete-post request body index key)
@@ -131,7 +136,8 @@
    request
    (lambda ()
      (delete-post (post-from-key index key #:allow-unpublished? #t))
-     (respond `((p "Redirecting...")) #:redirect (relurl `("admin"))))))
+     (respond request
+              `((p "Redirecting...")) #:redirect (relurl `("admin"))))))
 
 (define (page-admin-delete-comment request body index key comment-id)
   (with-authentication
@@ -139,7 +145,8 @@
    (lambda ()
      (let ((post (post-from-key index key #:allow-unpublished? #t)))
        (delete-comment post comment-id)
-       (respond `((p "Redirecting...")) #:redirect (admin-post-url post))))))
+       (respond request
+                `((p "Redirecting...")) #:redirect (admin-post-url post))))))
 
 (define (page-admin-changes request body index)
   (with-authentication
@@ -148,7 +155,8 @@
      (let ((revs (git-rev-list (request-query-ref request "start"
                                                   "refs/heads/master")
                                10)))
-       (respond `((h2 "Recent changes")
+       (respond request
+                `((h2 "Recent changes")
                   ,@(map (lambda (rev)
                            `(div (h3 ,(rellink `("admin" "changes" ,(car rev))
                                                (caddr rev)))
@@ -164,7 +172,8 @@
    request
    (lambda ()
      (let ((commit (parse-commit sha1)))
-       (respond `((h2 ,(assq-ref commit 'message))
+       (respond request
+                `((h2 ,(assq-ref commit 'message))
                   (p "Committed on "
                      ,(timestamp->rfc822-date
                        ;; needlessly goes to git again...
@@ -180,11 +189,13 @@
    request
    (lambda ()
      (let ((new-master (git-revert "refs/heads/master" sha1)))
-       (respond `((h3 "Change reverted"))
+       (respond request
+                `((h3 "Change reverted"))
                 #:redirect (relurl '("admin")))))))
 
 (define (page-index request body index)
-  (respond `(,@(map (lambda (post)
+  (respond request
+           `(,@(map (lambda (post)
                       (show-post post #f))
                     (latest-posts index))
              ,(main-sidebar request index))
@@ -195,7 +206,8 @@
    ((post-from-key index (make-post-key year month day post)
                    #:allow-draft? #t)
     => (lambda (post)
-         (respond `(,(show-post post #t)
+         (respond request
+                  `(,(show-post post #t)
                     ,(post-sidebar post index))
                   #:title (string-append (post-title post) " -- " *title*)
                   #:etag (assq-ref index 'master))))
@@ -210,12 +222,13 @@
            (cond
             ((bad-new-comment-post? data)
              => (lambda (reason)
-                  (respond `((p "Bad post data: " ,(pk reason))))))
+                  (respond request `((p "Bad post data: " ,(pk reason))))))
             (else
              (let ((comment (make-new-comment (post-key post) (post-title post)
                                               data)))
                ;; nb: at this point, `post' is out-of-date
-               (respond `((p "Comment posted, thanks."))
+               (respond request
+                        `((p "Comment posted, thanks."))
                         #:redirect (post-url post #:fragment "comments")
                         #:title "comment posted"))))))
      (else
@@ -242,14 +255,16 @@
 
       (let lp ((posts (latest-posts index #:limit -1)))
         (cond ((or (null? posts) (too-early? (car posts)))
-               (respond `((h1 "No posts found")
+               (respond request
+                        `((h1 "No posts found")
                           (p "No posts were found in the specified period."))
                         #:title *title*))
               ((early-enough? (car posts))
                (let lp ((posts posts) (new-header (make-date-header #t)) (out '()))
                  (cond
                   ((or (null? posts) (too-early? (car posts)))
-                   (respond (reverse out)
+                   (respond request
+                            (reverse out)
                             #:title (string-append "archives -- " *title*)
                             #:etag (assq-ref index 'master)))
                   ((new-header (car posts))
@@ -263,7 +278,8 @@
 (define (page-search request body index)
   (let* ((string (or (assoc-ref (request-form-data request body) "string") ""))
          (posts (find-posts-matching string index)))
-    (respond `((h2 "Search results: \"" ,string "\"")
+    (respond request
+             `((h2 "Search results: \"" ,string "\"")
                ,@(if (null? posts)
                      `((p "No posts matched your search string."))
                      (map (lambda (post)
@@ -271,7 +287,8 @@
                           posts))))))
 
 (define (page-show-tags request body index)
-  (respond `((div (@ (id "tag-cloud"))
+  (respond request
+           `((div (@ (id "tag-cloud"))
                   (h2 "All tags")
                   ,@(tag-cloud (top-tags index 200))))
            #:etag (assq-ref index 'master)
@@ -283,7 +300,8 @@
                        (post-from-key index key))
                      (hash-ref tags tag '()))))
     (if (pair? posts)
-        (respond `((h2 "Posts tagged \"" ,tag "\" ("
+        (respond request
+                 `((h2 "Posts tagged \"" ,tag "\" ("
                        ,(rellink '("feed" "atom") "feed"
                                  #:query `(("with" . ,tag)))
                        ")")
@@ -292,12 +310,14 @@
                    ,(related-tag-cloud tag index))
                  #:etag (assq-ref index 'master)
                  #:title (string-append "posts tagged \"" tag "\""))
-        (respond `((h2 "Unknown tag " ,tag)
+        (respond request
+                 `((h2 "Unknown tag " ,tag)
                    (p "No posts were found tagged as \"" ,tag "\"."))
                  #:status 404))))
 
 (define (page-debug request body index)
-  (respond `((p "Hello world!")
+  (respond request
+           `((p "Hello world!")
              (table
               (tr (th "Header") (th "Value"))
               ,@(map (lambda (pair)
@@ -310,7 +330,8 @@
            #:title "Debug"))
 
 (define (page-not-found request body index)
-  (respond `((h1 "Page not found")
+  (respond request
+           `((h1 "Page not found")
              (p "Unknown path: "
                 ,(request-relative-path-str (pk 'not-found request))))
            #:status 404))
@@ -322,19 +343,21 @@
     (cond
      ((let ((since (request-if-modified-since request)))
         (and since (>= (date->timestamp since) last-modified)))
-      (respond #f #:status 304
+      (respond request
+               #f #:status 304
                #:last-modified (timestamp->date last-modified)
                #:etag (assq-ref index 'master)))
      (else
-      (respond #f
+      (respond request
+               #f
                #:last-modified (and=> last-modified timestamp->date)
                #:doctype #f
                #:content-type 'application/atom+xml
                #:etag (assq-ref index 'master)
-               #:sxml (append (atom-header last-modified)
+               #:sxml (append (atom-header last-modified request)
                               (map
                                (lambda (post)
-                                 (atom-entry post))
+                                 (atom-entry post request))
                                posts)))))))
 
 (define (page-feed-atom request body index)

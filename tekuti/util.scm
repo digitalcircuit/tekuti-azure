@@ -37,7 +37,7 @@
             date-increment date-comparator date-before? date-after? compose1
             rfc822-date->timestamp timestamp->rfc822-date timestamp->atom-date
             date->timestamp timestamp->date string-split/trimming
-            list-intersperse with-time-debugging))
+            list-intersperse with-time-debugging constantly))
 
 (define (with-output-to-string* thunk)
   (let ((port (open-output-string)))
@@ -257,3 +257,5 @@
   (date->string (timestamp->date timestamp)
                 "~a, ~d ~b ~Y ~H:~M:~S GMT"))
 
+(define (constantly x)
+  (lambda _ x))

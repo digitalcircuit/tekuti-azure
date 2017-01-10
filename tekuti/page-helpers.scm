@@ -66,29 +66,33 @@
     ((_ tail)
      tail)))
 
-(define (ensure-uri x)
+(define (ensure-uri x request)
   (cond
    ((uri? x) x)
    ((string? x)
-    (build-uri *public-scheme* #:host *public-host* #:port *public-port*
-               #:path x))
+    (let ((scheme (request->public-scheme request))
+          (port (request->public-port request))
+          (host (request->public-host request)))
+      (if port
+          (build-uri scheme #:host host #:port port #:path x)
+          (build-uri scheme #:host host #:path x))))
    ((list? x)
-    (ensure-uri (relurl x)))
+    (ensure-uri (relurl x) request))
    (else (error "can't turn into a uri" x))))
 
-(define (ensure-uri-reference x)
+(define (ensure-uri-reference x request)
   (cond
    ((uri? x) x)
    ((string? x)
     (if (defined? 'build-uri-reference)
         (build-uri-reference #:path x)
         ;; Absolute URIs on older Guile.
-        (ensure-uri x)))
+        (ensure-uri x request)))
    ((list? x)
-    (ensure-uri-reference (relurl x)))
+    (ensure-uri-reference (relurl x) request))
    (else (error "can't turn into a uri" x))))
 
-(define* (respond #:optional body #:key
+(define* (respond request #:optional body #:key
                   redirect
                   (status (if redirect 302 200))
                   (title *title*)
@@ -102,7 +106,9 @@
   (values (build-response
            #:code status
            #:headers (build-headers
-                      location (and=> redirect ensure-uri-reference)
+                      location
+                      (and=> redirect
+                             (lambda (x) (ensure-uri-reference x request)))
                       last-modified last-modified
                       content-type (cons content-type content-type-params)
                       date (current-date)
@@ -413,13 +419,13 @@
   (if (request-authenticated? request)
       (thunk)
       (let ((header (parse-header 'www-authenticate "Basic realm=\"Tekuti\"")))
-        (respond `((p "Authentication required, yo"))
+        (respond request `((p "Authentication required, yo"))
                  #:status 401
                  #:extra-headers `((www-authenticate . ,header))))))
 
-(define (atom-header last-modified)
+(define (atom-header last-modified request)
   (define (relurl . tail)
-    (uri->string (ensure-uri tail)))
+    (uri->string (ensure-uri tail request)))
   `(feed
      (@ (xmlns "http://www.w3.org/2005/Atom") (xml:base ,(relurl)))
      (title (@ (type "text")) ,*title*)
@@ -436,9 +442,9 @@
      (link (@ (rel "self") (type "application/atom+xml")
               (href ,(relurl "feed" "atom"))))))
 
-(define (atom-entry post)
+(define (atom-entry post request)
   (define (relurl . tail)
-    (uri->string (ensure-uri tail)))
+    (uri->string (ensure-uri tail request)))
   `(entry
     (author (name ,*name*) (uri ,(relurl)))
     (title (@ (type "text")) ,(post-title post))

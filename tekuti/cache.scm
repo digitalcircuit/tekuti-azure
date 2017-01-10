@@ -28,8 +28,10 @@
 
 (define-module (tekuti cache)
   #:use-module (tekuti util)
+  #:use-module (tekuti config)
   #:use-module (web request)
   #:use-module (web response)
+  #:use-module (srfi srfi-1)
   #:use-module (srfi srfi-19)
   #:export (make-empty-cache
             cached-response-and-body
@@ -64,14 +66,28 @@
     ((_ tail)
      tail)))
 
+(define (cache-key-header-vals headers)
+  (fold
+   (lambda (k l)
+     (cons (cons k (assq-ref headers k)) l))
+   '() *cache-key-headers*))
+     
+(define (cache-headers-equal? cache-headers req-headers)
+  (and-map
+   (lambda (p)
+     (equal? (cdr p) (assq-ref req-headers (car p))))
+   cache-headers))
+
 (define (make-entry request response body)
   (let ((uri (request-uri request))
-        (method (request-method request)))
+        (method (request-method request))
+        (cache-headers (cache-key-header-vals (request-headers request))))
     (case (response-code response)
       ((304)
        (lambda (request)
          (and (equal? (request-uri request) uri)
               (eq? (request-method request) method)
+              (cache-headers-equal? cache-headers (request-headers request))
               (let ((last-modified (response-last-modified response))
                     (since (request-if-modified-since request)))
                 (if (and last-modified since)
@@ -88,6 +104,7 @@
        (lambda (request)
          (and (equal? (request-uri request) uri)
               (eq? (request-method request) method)
+              (cache-headers-equal? cache-headers (request-headers request))
               (or (let ((last-modified (response-last-modified response))
                         (since (request-if-modified-since request))
                         (etag (response-etag response))
@@ -112,6 +129,7 @@
        (lambda (request)
          (and (equal? (request-uri request) uri)
               (eq? (request-method request) method)
+              (cache-headers-equal? cache-headers (request-headers request))
               (cons response body)))))))
 
 (define (cached-response-and-body cache request)
