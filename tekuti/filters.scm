@@ -105,6 +105,7 @@
     (blockquote (cite . ,urlish?))
     (code)
     (em)
+    (hr)
     (i)
     (p)
     (pre)
