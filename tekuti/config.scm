@@ -92,7 +92,7 @@
 (define *html-head*
   `((meta (@ (name "Generator")
              (content "An unholy concoction of parenthetical guile")))
-    (meta (@ (name "viewport") (content "width=device-width")))
+    (meta (@ (name "viewport") (content "width=device-width, initial-scale=1")))
     (link (@ (rel "stylesheet")
              (type "text/css")
              (media "screen")
