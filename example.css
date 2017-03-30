@@ -355,6 +355,10 @@ div.cartouche {
     font-variant: small-caps;
 }
 
+strong {
+    font-weight: 600;
+}
+
 #commentform textarea {
     width: 100%;
     padding: .1em;
